@@ -1,76 +1,54 @@
 # shopman-offerman
 
-Product catalog with listings, collections, and bundles.
+Catálogo de produtos para Django. Produtos, listings por canal com preços diferenciados, coleções para organização visual, bundles compostos, e sugestões inteligentes de alternativas.
 
 Part of the [Django Shopman](https://github.com/pablondrina/django-shopman) commerce framework.
 
-## Overview
+## Domínio
 
-**Domain:** Catálogo
-**Namespace:** `shopman.offerman`
-**Pip package:** `shopman-offerman`
+- **Product** — produto vendável. SKU único, preço base (`base_price_q` em centavos), categorização, flags de disponibilidade.
+- **ProductComponent** — componente de produto composto (bundle). Produto pai + produto filho + quantidade.
+- **Listing** — tabela de preços por canal. Ex: "iFood" com markup, "Balcão" com preço cheio, "Funcionários" com desconto.
+- **ListingItem** — produto numa listing com preço específico, qty mínima, e flags de publicação/disponibilidade.
+- **Collection** — agrupamento visual de produtos (ex: "Pães", "Cafés", "Promoções da Semana").
+- **CollectionItem** — produto numa coleção com ordenação.
 
-### Main Models
+## CatalogService
 
-Product, Listing, ListingItem, Collection, Bundle
+Resolução de catálogo com cascata de preços:
 
-## Installation
+1. Preço do grupo do cliente (se identificado)
+2. Preço do canal (via listing do canal)
+3. Preço base do produto
+
+## Contribs
+
+- `offerman.contrib.suggestions` — Sugestões inteligentes de alternativas quando produto indisponível. Scoring por keywords, coleção e faixa de preço.
+- `offerman.contrib.import_export` — Import/export de produtos e preços via CSV/Excel (django-import-export). `ProductResource` e `ListingItemResource`.
+- `offerman.contrib.admin_unfold` — Admin com Unfold theme + export.
+
+## Instalação
 
 ```bash
 pip install shopman-offerman
 ```
 
-## Quick Start
-
 ```python
-# settings.py
 INSTALLED_APPS = [
     "shopman.offerman",
-    # ...
+    "shopman.offerman.contrib.suggestions",    # opcional
+    "shopman.offerman.contrib.import_export",  # opcional
+    "shopman.offerman.contrib.admin_unfold",   # opcional
 ]
 ```
 
-## Architecture
-
-This package is a **Core app** — it provides domain-specific models, services, and protocols with zero dependencies on other Shopman apps (except `shopman-utils`).
-
-Communication with other apps happens via `typing.Protocol` — no direct imports. The framework layer (`django-shopman`) orchestrates integration between core apps.
-
-## Conventions
-
-- **Monetary values:** `int` in centavos with `_q` suffix (e.g., `price_q = 1050` → R$ 10.50)
-- **Identifiers:** `ref` (not `code`). Exception: `Product.sku`
-- **Inter-app communication:** `typing.Protocol` + adapters, no direct imports
-
 ## Development
 
-This package is developed in the [django-shopman](https://github.com/pablondrina/django-shopman) monorepo under `packages/offerman/`.
-
 ```bash
-# Clone the monorepo
 git clone https://github.com/pablondrina/django-shopman.git
-cd django-shopman
-
-# Install in editable mode
-pip install -e packages/offerman
-
-# Run tests
-make test-offerman
+cd django-shopman && pip install -e packages/offerman
+make test-offerman  # ~231 testes
 ```
-
-## Related Packages
-
-| Package | Domain |
-|---------|--------|
-| [django-shopman](https://github.com/pablondrina/django-shopman) | Framework orchestrator |
-| [shopman-utils](https://github.com/pablondrina/shopman-utils) | Shared utilities |
-| [shopman-omniman](https://github.com/pablondrina/shopman-omniman) | Orders |
-| [shopman-stockman](https://github.com/pablondrina/shopman-stockman) | Inventory |
-| [shopman-craftsman](https://github.com/pablondrina/shopman-craftsman) | Production |
-| [shopman-offerman](https://github.com/pablondrina/shopman-offerman) | Catalog |
-| [shopman-guestman](https://github.com/pablondrina/shopman-guestman) | CRM |
-| [shopman-doorman](https://github.com/pablondrina/shopman-doorman) | Auth |
-| [shopman-payman](https://github.com/pablondrina/shopman-payman) | Payments |
 
 ## License
 
